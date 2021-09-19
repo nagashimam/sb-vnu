@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "Storybook上のAngularアプリに対し、vu html checkerでHTML構文チェックをする",
   "main": "dist/index.js",
+  "bin": {
+    "sb-vnu": "dist/cli.js"
+  },
   "scripts": {
-    "build":"tsc -p ./ --outDir dist",
+    "build": "rimraf dist && tsc -p ./ --outDir dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,6 +26,10 @@
   },
   "homepage": "https://github.com/nagashimam/sb-vnu#readme",
   "devDependencies": {
+    "rimraf": "^3.0.2",
     "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "meow": "^9.0.0"
   }
 }
