@@ -42,7 +42,7 @@ export class Crawler {
       (story) => async (browser) => {
         await browser.setCurrentStory(story);
         await new MetricsWatcher(browser.page).waitForStable();
-        this.decorator.check(browser, story);
+        await this.decorator.check(browser, story);
       }
     );
   }

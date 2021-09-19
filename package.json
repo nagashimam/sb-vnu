@@ -26,11 +26,14 @@
   },
   "homepage": "https://github.com/nagashimam/sb-vnu#readme",
   "devDependencies": {
+    "@types/mkdirp": "^1.0.2",
     "rimraf": "^3.0.2",
     "typescript": "^4.4.3"
   },
   "dependencies": {
+    "lighthouse": "^8.4.0",
     "meow": "^9.0.0",
+    "mkdirp": "^1.0.4",
     "puppeteer": "^10.2.0",
     "storycrawler": "^3.1.0"
   }
