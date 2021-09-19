@@ -2,8 +2,9 @@
   "name": "sb-vnu",
   "version": "1.0.0",
   "description": "Storybook上のAngularアプリに対し、vu html checkerでHTML構文チェックをする",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "build":"tsc -p ./ --outDir dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/nagashimam/sb-vnu/issues"
   },
-  "homepage": "https://github.com/nagashimam/sb-vnu#readme"
+  "homepage": "https://github.com/nagashimam/sb-vnu#readme",
+  "devDependencies": {
+    "typescript": "^4.4.3"
+  }
 }

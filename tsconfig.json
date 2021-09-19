@@ -1,0 +1,12 @@
+{
+  "include": ["src"],
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  }
+}
