@@ -35,8 +35,8 @@ interface VnuSourceObject {
 }
 //#endregion
 
-export class CrawlerVnuDecorator extends CrawlerDecorator {
-  private readonly directory = "test/vnu";
+export class CrawlerHtmlDecorator extends CrawlerDecorator {
+  private readonly directory = "test/vnu/html";
 
   constructor(private baseDecorator: CrawlerDecorator) {
     super();
@@ -44,10 +44,10 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
 
   async prepare(): Promise<void> {
     this.baseDecorator.prepare();
-    const promise = new Promise<void>((resolve, _) => {
+    await mkdirp(this.directory);
+    await new Promise<void>((resolve, _) => {
       rimraf(`${this.directory}/*.json`, () => resolve());
     });
-    await promise;
   }
 
   async checkIterably(
@@ -56,8 +56,6 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
   ): Promise<void> {
     this.baseDecorator.checkIterably(previewBrowser, story);
     console.log("HTML構文チェック");
-
-    await mkdirp(this.directory);
 
     const html = await this.extractComponentHtmlFromIframe(previewBrowser);
     const tmpJson = `${this.directory}/tmp${story.id}.json`;
@@ -69,8 +67,9 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
       JSON.parse(readFileSync(tmpJson, "utf8"))
     );
     if (result) {
+      const outputPath = `./${this.directory}/${story.id}.json`;
       await this.promisifiedExec(
-        `echo '${JSON.stringify(result)}' > ./test/vnu/${story.id}.json`
+        `echo '${JSON.stringify(result)}' > ${outputPath}`
       );
     }
   }

@@ -3,7 +3,8 @@ import {
   Crawler,
   CrawlerDecorator,
   CrawlerLighthouseDecorator,
-  CrawlerVnuDecorator,
+  CrawlerHtmlDecorator,
+  CrawlerScssDecorator,
 } from ".";
 
 const cli = meow("help message", {
@@ -12,6 +13,9 @@ const cli = meow("help message", {
       type: "string",
     },
     html: {
+      type: "boolean",
+    },
+    scss: {
       type: "boolean",
     },
     lighthouse: {
@@ -29,10 +33,13 @@ if (!cli.flags.storybookUrl) {
 
 let decorator = new CrawlerDecorator();
 if (cli.flags.html) {
-  decorator = new CrawlerVnuDecorator(decorator);
+  decorator = new CrawlerHtmlDecorator(decorator);
 }
 if (cli.flags.lighthouse) {
   decorator = new CrawlerLighthouseDecorator(decorator);
+}
+if (cli.flags.scss) {
+  decorator = new CrawlerScssDecorator(decorator);
 }
 
 const crawler = new Crawler(decorator);

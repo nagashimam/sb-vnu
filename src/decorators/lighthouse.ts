@@ -12,10 +12,10 @@ export class CrawlerLighthouseDecorator extends CrawlerDecorator {
 
   async prepare(): Promise<void> {
     this.baseDecorator.prepare();
-    const promise = new Promise<void>((resolve, _) => {
+    await mkdirp(this.directory);
+    await new Promise<void>((resolve, _) => {
       rimraf(`${this.directory}/*.json`, () => resolve());
     });
-    await promise;
   }
 
   async checkIterably(
@@ -25,13 +25,15 @@ export class CrawlerLighthouseDecorator extends CrawlerDecorator {
     this.baseDecorator.checkIterably(previewBrowser, story);
     console.log(`Lighthouseによるチェック:${previewBrowser.page.url()}`);
 
-    await mkdirp(this.directory);
     const outputPath = `./${this.directory}/${story.id}.json`;
+    const threeSecondInMs = 3000;
     const clearId = setInterval(() => {
       console.log(`${story.story}のチェック中...`);
-    }, 3000);
-    return this.promisifiedExec(
+    }, threeSecondInMs);
+
+    await this.promisifiedExec(
       `npx lighthouse ${previewBrowser.page.url()} --output json --output-path ${outputPath}`
-    ).then(() => clearInterval(clearId));
+    );
+    clearInterval(clearId);
   }
 }
