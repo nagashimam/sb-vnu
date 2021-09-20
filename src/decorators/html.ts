@@ -42,6 +42,14 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
     super();
   }
 
+  async prepare(): Promise<void> {
+    this.baseDecorator.prepare();
+    const promise = new Promise<void>((resolve, _) => {
+      rimraf(`${this.directory}/*.json`, () => resolve());
+    });
+    await promise;
+  }
+
   async checkIterably(
     previewBrowser: StoryPreviewBrowser,
     story: Story
@@ -68,6 +76,7 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
   }
 
   async cleanUp(_storiesBrowser: StoriesBrowser): Promise<void> {
+    this.baseDecorator.cleanUp(_storiesBrowser);
     const promise = new Promise<void>((resolve, _) => {
       rimraf(`${this.directory}/tmp*.json`, () => resolve());
     });

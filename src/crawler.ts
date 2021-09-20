@@ -17,6 +17,7 @@ export class Crawler {
       storybookUrl,
     }).connect();
     const storiesBrowser = await new StoriesBrowser(connection).boot();
+    await this.decorator.prepare();
     await this.decorator.check(storiesBrowser);
 
     const stories = await storiesBrowser.getStories();

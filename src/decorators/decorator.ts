@@ -7,9 +7,9 @@ export class CrawlerDecorator {
 
   protected promisifiedExec = promisify(exec);
 
-  async check(storiesBrowser: StoriesBrowser) {
-    console.log(`storybookUrl:${storiesBrowser.page.url()}`);
-  }
+  async prepare(): Promise<void> {}
+
+  async check(_storiesBrowser: StoriesBrowser) {}
 
   async checkIterably(
     _previewBrowser: StoryPreviewBrowser,
