@@ -27,6 +27,7 @@
   "homepage": "https://github.com/nagashimam/sb-vnu#readme",
   "devDependencies": {
     "@types/mkdirp": "^1.0.2",
+    "@types/rimraf": "^3.0.2",
     "@types/vnu-jar": "^17.11.0",
     "rimraf": "^3.0.2",
     "typescript": "^4.4.3"

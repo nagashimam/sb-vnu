@@ -17,8 +17,9 @@ export class Crawler {
       storybookUrl,
     }).connect();
     const storiesBrowser = await new StoriesBrowser(connection).boot();
-    const stories = await storiesBrowser.getStories();
+    await this.decorator.check(storiesBrowser);
 
+    const stories = await storiesBrowser.getStories();
     const numberOfWorkers = cpus().length / 2; // メモリを使いすぎるとフリーズするので、使えるプロセスの半分にしておく
     const browsers = await Promise.all(
       Array.from({ length: numberOfWorkers }, (_, index) => index).map((_, i) =>
@@ -29,6 +30,7 @@ export class Crawler {
     try {
       await this.createService(browsers, stories).execute();
     } finally {
+      await this.decorator.cleanUp(storiesBrowser);
       await storiesBrowser.close();
       await Promise.all(browsers.map((browser) => browser.close()));
       await connection.disconnect();
@@ -42,7 +44,7 @@ export class Crawler {
       (story) => async (browser) => {
         await browser.setCurrentStory(story);
         await new MetricsWatcher(browser.page).waitForStable();
-        await this.decorator.check(browser, story);
+        await this.decorator.checkIterably(browser, story);
       }
     );
   }
