@@ -1,29 +1,10 @@
-import { StoriesBrowser, Story, StoryPreviewBrowser } from "storycrawler";
-import { promisify } from "util";
-import { exec } from "child_process";
-import * as mkdirp from "mkdirp";
 import vnuJarPath from "vnu-jar";
 import { readFileSync } from "fs";
-import * as rimraf from "rimraf";
 
-export class CrawlerDecorator {
-  constructor() {}
-
-  protected promisifiedExec = promisify(exec);
-
-  async check(storiesBrowser: StoriesBrowser) {
-    console.log(`storybookUrl:${storiesBrowser.page.url()}`);
-  }
-
-  async checkIterably(
-    _previewBrowser: StoryPreviewBrowser,
-    story: Story
-  ): Promise<void> {
-    console.log(`story名:${story.story}`);
-  }
-
-  async cleanUp(_storiesBrowser: StoriesBrowser): Promise<void> {}
-}
+import mkdirp from "mkdirp";
+import rimraf from "rimraf";
+import { StoryPreviewBrowser, Story, StoriesBrowser } from "storycrawler";
+import { CrawlerDecorator } from "./decorator";
 
 //#region vnuの実行結果のフォーマットにjsonを指定したときの型
 //https://github.com/validator/validator/wiki/Output-%C2%BB-JSON
@@ -68,7 +49,7 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
     this.baseDecorator.checkIterably(previewBrowser, story);
     console.log("HTML構文チェック");
 
-    await mkdirp.default(this.directory);
+    await mkdirp(this.directory);
 
     const html = await this.extractComponentHtmlFromIframe(previewBrowser);
     const tmpJson = `${this.directory}/tmp${story.id}.json`;
@@ -88,7 +69,7 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
 
   async cleanUp(_storiesBrowser: StoriesBrowser): Promise<void> {
     const promise = new Promise<void>((resolve, _) => {
-      rimraf.default(`${this.directory}/tmp*.json`, () => resolve());
+      rimraf(`${this.directory}/tmp*.json`, () => resolve());
     });
     await promise;
   }
@@ -142,25 +123,5 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
           messages,
         }
       : undefined;
-  }
-}
-
-export class CrawlerLighthouseDecorator extends CrawlerDecorator {
-  constructor(private baseDecorator: CrawlerDecorator) {
-    super();
-  }
-
-  async checkIterably(
-    previewBrowser: StoryPreviewBrowser,
-    story: Story
-  ): Promise<void> {
-    this.baseDecorator.checkIterably(previewBrowser, story);
-
-    console.log(`Lighthouseのデコレーター:${previewBrowser.page.url()}`);
-    await mkdirp.default("test/lighthouse");
-    const outputPath = `./test/lighthouse/${story.id}.json`;
-    await this.promisifiedExec(
-      `npx lighthouse ${previewBrowser.page.url()} --output json --output-path ${outputPath}`
-    );
   }
 }

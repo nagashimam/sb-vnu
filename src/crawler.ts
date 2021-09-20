@@ -6,8 +6,8 @@ import {
   StorybookConnection,
   StoryPreviewBrowser,
 } from "storycrawler";
-import { CrawlerDecorator } from "./decorator";
 import { cpus } from "os";
+import { CrawlerDecorator } from "./decorators/decorator";
 
 export class Crawler {
   constructor(private decorator: CrawlerDecorator) {}
