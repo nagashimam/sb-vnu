@@ -27,8 +27,11 @@ export class CrawlerLighthouseDecorator extends CrawlerDecorator {
 
     await mkdirp(this.directory);
     const outputPath = `./${this.directory}/${story.id}.json`;
-    await this.promisifiedExec(
+    const clearId = setInterval(() => {
+      console.log(`${story.story}のチェック中...`);
+    }, 3000);
+    return this.promisifiedExec(
       `npx lighthouse ${previewBrowser.page.url()} --output json --output-path ${outputPath}`
-    );
+    ).then(() => clearInterval(clearId));
   }
 }
