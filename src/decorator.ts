@@ -3,6 +3,7 @@ import { promisify } from "util";
 import { exec } from "child_process";
 import * as mkdirp from "mkdirp";
 import vnuJarPath from "vnu-jar";
+import { readFileSync } from "fs";
 
 export class CrawlerDecorator {
   constructor() {}
@@ -15,6 +16,35 @@ export class CrawlerDecorator {
   }
 }
 
+//#region vnuの実行結果のフォーマットにjsonを指定したときの型
+//https://github.com/validator/validator/wiki/Output-%C2%BB-JSON
+interface VnuResultObject {
+  messages: VnuMessageObject[];
+  url?: string;
+  source?: VnuSourceObject;
+  language?: string;
+}
+
+interface VnuMessageObject {
+  type: "info" | "error" | "non-document-error";
+  subtype?: "warning" | "fatal" | "io" | "schema" | "internal";
+  message?: string;
+  extract?: string;
+  offset?: number;
+  url?: string;
+  firstLine?: number;
+  secondLine?: number;
+  firstColumn?: number;
+  secondColumn?: number;
+}
+
+interface VnuSourceObject {
+  code: string;
+  type?: string;
+  encoding?: string;
+}
+//#endregion
+
 export class CrawlerVnuDecorator extends CrawlerDecorator {
   constructor(private baseDecorator: CrawlerDecorator) {
     super();
@@ -24,16 +54,28 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
     this.baseDecorator.check(browser, story);
 
     console.log("VNUのデコレーター");
-    await mkdirp.default("test/vnu");
+    const directory = "test/vnu";
+    await mkdirp.default(directory);
 
-    const outputPath = `./test/vnu/${story.id}.json`;
     const html = await this.getHtml(browser);
+    const tmpJson = `${directory}/tmp.json`;
     await this.promisifiedExec(
-      `echo '${html}' | java -jar ${vnuJarPath} --exit-zero-always --format json - > ${outputPath} 2>&1`
+      `echo '${html}' | java -jar ${vnuJarPath} --exit-zero-always --format json - > ${tmpJson} 2>&1`
     );
+
+    const result = this.filterNgAttributeErrors(
+      JSON.parse(readFileSync(tmpJson, "utf8"))
+    );
+    if (result) {
+      await this.promisifiedExec(
+        `echo '${JSON.stringify(result)}' > ./test/vnu/${story.id}.json`
+      );
+    }
   }
 
   private async getHtml(browser: StoryPreviewBrowser): Promise<string> {
+    // 直接pageのhtmlをvnuに掛けると、Storybookのスクリプトやスタイルでエラーが出る
+    // なので、コンポーネントのHTMLだけを取出してチェックする
     const storyRoot = await await browser.page.$eval(
       "#root",
       (elm) => elm.innerHTML
@@ -56,6 +98,28 @@ export class CrawlerVnuDecorator extends CrawlerDecorator {
 </html>
 
     `;
+  }
+
+  private filterNgAttributeErrors(
+    resultObject: VnuResultObject
+  ): VnuResultObject | undefined {
+    const messages = resultObject.messages.filter((message) => {
+      if (!message || !message.message) {
+        return true;
+      }
+
+      if (message.message.includes("ngcontent")) {
+        return false;
+      }
+
+      return !message.message.includes("ng-reflect");
+    });
+
+    return messages.length > 0
+      ? {
+          messages,
+        }
+      : undefined;
   }
 }
 
